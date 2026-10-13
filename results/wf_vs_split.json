@@ -1,0 +1,12 @@
+{
+  "split_date": "2018-01-01",
+  "online_kalman_sharpe": 0.4461402518115385,
+  "online_kalman_vt_sharpe": 0.45304684760148756,
+  "wf_blocks_sharpe": 0.15824889871739606,
+  "simple_split_is_sharpe": 0.6280910922305906,
+  "simple_split_oos_sharpe": 0.11212109859744054,
+  "online_kalman_is_sharpe": 0.44599507552170536,
+  "online_kalman_oos_sharpe": 0.44719765287076607,
+  "wf_blocks_is_sharpe": 0.6892846049299777,
+  "wf_blocks_oos_sharpe": 0.13647896378496885
+}

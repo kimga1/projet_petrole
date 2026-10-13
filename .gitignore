@@ -1,0 +1,23 @@
+# --- Secrets (NE JAMAIS COMMITER) ---
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# --- Environnement Python ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# NB : data/*.parquet et results/* SONT versionnés (résultats reproductibles).

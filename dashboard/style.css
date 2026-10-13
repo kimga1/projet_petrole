@@ -1,0 +1,240 @@
+/* Feuille de style du dashboard (thème TERMINAL, sombre, monospace).
+
+   Chargée par app.py dans un <style>. Entièrement statique : la couleur
+   secondaire passe par les variables --accent / --accent-lt, définies (et
+   animées en mode disco) par le petit bloc dynamique injecté par app.py. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+/* Monospace intégrale (terminal) */
+html, body, .stApp, [class*="st-"] { font-family: 'IBM Plex Mono', monospace;
+                                     font-variant-numeric: tabular-nums; }
+[data-testid="stIconMaterial"], [class*="material-symbols"],
+span[translate="no"] {
+    font-family: 'Material Symbols Rounded', 'Material Symbols Outlined' !important;
+}
+.stApp { background: #131417; }
+
+/* Chrome Streamlit masqué. Le header est RÉTRÉCI à un petit carré haut-gauche
+   (au lieu d'être neutralisé aux clics) : c'est lui qui, au survol, fait
+   apparaître le bouton natif de réouverture de la sidebar — pointer-events
+   requis. Réduit à 64x44px, il ne peut plus bloquer le contenu. */
+[data-testid="stHeader"] {
+    background: transparent; width: 64px; height: 44px;
+    left: 0; right: auto;
+}
+[data-testid="stToolbar"], [data-testid="stDecoration"],
+[data-testid="stStatusWidget"], #MainMenu, footer { display: none !important; }
+
+/* Affordance : chevron ambre visible quand la sidebar est repliée (sinon
+   l'utilisateur n'a aucun indice que le coin est survolable). Le bouton natif
+   se monte par-dessus au survol. */
+.stApp:has([data-testid="stSidebar"][aria-expanded="false"])
+    [data-testid="stHeader"]::after {
+    content: "»"; position: absolute; top: 8px; left: 8px;
+    width: 28px; height: 26px; line-height: 24px; text-align: center;
+    color: var(--accent); border: 1px solid var(--accent); background: #1A1C20;
+    font: 700 14px 'IBM Plex Mono', monospace; pointer-events: none;
+}
+/* Le testid EST le <button> ; son parent naturel est écrasé par le header
+   réduit -> on le sort du flux (fixed) avec une taille explicite, exactement
+   sur le chevron-affordance. */
+button[data-testid="stExpandSidebarButton"] {
+    position: fixed !important; top: 8px; left: 8px; z-index: 999990;
+    width: 28px !important; height: 26px !important;
+    display: flex !important; align-items: center; justify-content: center;
+    background: #1A1C20 !important; border: 1px solid var(--accent) !important;
+    border-radius: 0 !important; padding: 0 !important;
+}
+button[data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {
+    color: var(--accent) !important; font-size: 17px;
+}
+
+.block-container { padding-top: 0.9rem; padding-bottom: 1.2rem; }
+[data-testid="stVerticalBlock"] { gap: 0.55rem; }
+
+[data-testid="stMarkdownContainer"] p { font-size: 12px; }
+[data-testid="stCaptionContainer"] p, .stCaption p { font-size: 10px !important;
+    color: #7A8089 !important; }
+
+/* FIX SYSTÉMIQUE ANTI-SUPERPOSITION : Streamlit met margin-bottom:-1rem sur
+   chaque conteneur markdown pour compenser la marge du <p> final supposé.
+   Nos blocs HTML n'ont pas de <p> final -> tout ce qui suit remontait de 16px
+   (pills sur le bandeau, segmented sur « Hedge ratio », captions coupées).
+   On neutralise la compensation ET la marge du dernier <p> : chaque élément
+   occupe exactement sa hauteur réelle, l'espacement vient du gap du layout. */
+[data-testid="stMarkdownContainer"] { margin-bottom: 0 !important; }
+[data-testid="stMarkdownContainer"] > p:last-child,
+[data-testid="stMarkdownContainer"] > div > p:last-child { margin-bottom: 0 !important; }
+
+.mono { font-family: 'IBM Plex Mono', monospace !important; }
+
+/* Sidebar */
+[data-testid="stSidebar"] { background: #17181C; border-right: 1px solid #34373E; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { font-size: 11px; }
+
+/* Panneaux : st.container(border=True) — angles droits, bord fin.
+   Deux markups : ancien (stVerticalBlockBorderWrapper) et Streamlit >= 1.6x
+   (la bordure est portée par le stVerticalBlock du container ; on le cible
+   par la classe st-key-panel-N posée via card(), précise par construction). */
+[data-testid="stVerticalBlockBorderWrapper"],
+[data-testid="stVerticalBlock"][class*="st-key-panel-"] {
+    background: #1A1C20; border: 1px solid #34373E !important;
+    border-radius: 0 !important; padding: 9px 11px !important;
+}
+
+/* Onglets -> barre de fonctions terminal (markups react-aria + BaseWeb) */
+.stTabs [role="tablist"], .stTabs [data-baseweb="tab-list"] {
+    gap: 4px; border-bottom: 1px solid #34373E !important; box-shadow: none !important;
+    padding-bottom: 6px;
+}
+.stTabs [data-testid="stTab"], .stTabs [data-baseweb="tab"] {
+    background: #1A1C20; border: 1px solid #34373E; border-radius: 0 !important;
+    padding: 2px 12px; color: var(--accent); font-weight: 700;
+}
+.stTabs [data-testid="stTab"] p { color: inherit !important; font-weight: 700;
+    font-size: 11px !important; letter-spacing: .04em; }
+.stTabs [data-testid="stTab"]:hover, .stTabs [data-baseweb="tab"]:hover {
+    border-color: var(--accent); background: #212429;
+}
+.stTabs [aria-selected="true"] {
+    background: var(--accent) !important; color: #000 !important; border-color: var(--accent) !important;
+}
+.stTabs .react-aria-SelectionIndicator,
+.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none !important; }
+.stTabs [role="tablist"]::after { display: none !important; content: none !important; }
+
+/* Sélecteur de langue : pills alignées à droite dans leur colonne */
+[class*="st-key-lang_pick"] [data-testid="stButtonGroup"] {
+    justify-content: flex-end;
+}
+
+/* Sliders : piste fine, pouce carré ambre, pas de valeur ni de ticks natifs */
+[data-testid="stSlider"] { padding-top: 0; padding-bottom: 0; }
+[data-testid="stSliderThumbValue"], [data-testid="stSliderTickBar"] { display: none; }
+[data-testid="stSlider"] [role="group"] > div:first-of-type > div:first-of-type {
+    height: 4px !important; border-radius: 0 !important;
+}
+[data-testid="stSlider"] [role="group"] div:has(> [data-testid="stSliderThumbValue"]) {
+    border-radius: 0 !important;
+}
+
+/* Rangée label/valeur au-dessus de chaque slider (aucune marge négative :
+   chaque paire vit dans st.container(key="pair-…"), ciblé par sa classe
+   st-key — précis par construction, ne matche jamais un conteneur parent). */
+.bw-prow { display: flex; justify-content: space-between; align-items: baseline;
+           margin: 2px 0 0; }
+.bw-prow .l { color: #9A9A9A; font-size: 11px; }
+.bw-prow .v { color: var(--accent); font-size: 11px; font-weight: 700;
+              font-family: 'IBM Plex Mono', monospace; }
+[data-testid="stVerticalBlock"][class*="st-key-pair-"],
+[class*="st-key-pair-"] [data-testid="stVerticalBlock"] { gap: 0.1rem !important; }
+
+/* Toggle : label à gauche, piste verte quand actif */
+[data-testid="stSidebar"] label:has(input[role="switch"]) {
+    width: 100%; justify-content: space-between; flex-direction: row-reverse;
+}
+[data-testid="stSidebar"] label:has(input[role="switch"]) p {
+    font-size: 11.5px !important; font-weight: 700; color: #F5F5F5 !important;
+    background: none !important;
+}
+[data-testid="stSidebar"] label[data-selected="true"]:has(input[role="switch"])
+    > div:not([data-testid="stWidgetLabel"]) {
+    background: #00C86E !important; border-color: #00C86E !important;
+}
+
+/* Expanders carrés (le radius est porté par le <details> interne) */
+[data-testid="stExpander"], [data-testid="stExpander"] details {
+    border-radius: 0 !important; border-color: #34373E !important;
+    background: #1A1C20;
+}
+
+/* Titres de panneau : ambre uppercase souligné (façon header terminal) */
+.bw-ct { color: var(--accent); font-size: 11px; font-weight: 700;
+         letter-spacing: .08em; text-transform: uppercase;
+         border-bottom: 1px solid #34373E; padding-bottom: 4px; margin-bottom: 7px; }
+
+/* Blocs HTML custom */
+.bw-hero { background: #1E2126; border: 1px solid #34373E; border-radius: 0;
+           padding: 12px 14px; }
+.bw-card { background: #1A1C20; border: 1px solid #34373E; border-radius: 0;
+           padding: 9px 11px; }
+.bw-nested { background: #212429; border: 1px solid #3A3D45; border-radius: 0;
+             padding: 8px 10px; }
+.bw-micro { color: var(--accent); font-size: 9.5px; font-weight: 700;
+            letter-spacing: .08em; text-transform: uppercase; }
+.bw-lbl { color: var(--accent); font-size: 9.5px; font-weight: 700;
+          letter-spacing: .06em; text-transform: uppercase; }
+.bw-val { color: #F5F5F5; font-size: 15px; font-weight: 600; margin-top: 2px;
+          font-family: 'IBM Plex Mono', monospace; }
+.bw-hero .val { color: var(--accent); font-size: 34px; font-weight: 700; line-height: 1.2;
+                font-family: 'IBM Plex Mono', monospace; }
+.bw-hero .sub { color: #9A9A9A; font-size: 10.5px; margin-top: 6px; }
+.bw-badge { display: inline-block; border-radius: 0; padding: 1px 7px;
+            font-size: 10px; font-weight: 700; margin: 0 5px 4px 0;
+            white-space: nowrap; }
+.bw-badge.up { background: rgba(0,200,110,.15); color: #00C86E; }
+.bw-badge.down { background: rgba(255,68,56,.15); color: #FF4438; }
+.bw-badge.flat { background: rgba(184,184,184,.15); color: #B8B8B8; }
+.bw-badge.blue { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent-lt); }
+
+/* Tableaux */
+.bw-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.bw-table th { color: var(--accent); font-size: 9.5px; font-weight: 700;
+               text-transform: uppercase; letter-spacing: .06em; text-align: left;
+               padding: 4px 7px; border-bottom: 1px solid #34373E; }
+.bw-table td { color: #D9D9D9; padding: 5px 7px; border-bottom: 1px solid #24262B; }
+.bw-table td.num { font-family: 'IBM Plex Mono', monospace; }
+
+.bw-warn { background: transparent; border: 1px solid var(--accent); border-radius: 0;
+           padding: 7px 11px; color: var(--accent); font-size: 11px; font-weight: 500; }
+.bw-ctx { color: #7A8089; font-size: 10px; margin: 2px 0 4px; }
+
+/* Bandeau titre + barre de statut (touches terminal fonctionnelles) */
+.bb-banner { background: var(--accent); color: #000; font-weight: 700; font-size: 12px;
+             letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px;
+             display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+.bb-status { border-top: 1px solid #34373E; color: #7A8089; font-size: 9.5px;
+             letter-spacing: .05em; text-transform: uppercase; padding-top: 6px;
+             margin-top: 14px; }
+
+/* Déclencheur du sélecteur de couleur : même design que les pills EN | FR
+   (rayon plein, même bordure/fond/hauteur), texte en capitales, sans chevron. */
+[data-testid="stPopover"] { display: flex; justify-content: flex-end; }
+[data-testid="stPopover"] button[data-testid="stPopoverButton"] {
+    border-radius: 9999px !important; min-height: 32px; height: 32px;
+    padding: 4px 12px !important; background: #131417 !important;
+    border: 1px solid rgba(217, 217, 217, 0.2) !important;
+}
+[data-testid="stPopover"] button[data-testid="stPopoverButton"] p {
+    font-size: 12px !important; color: #D9D9D9;
+    text-transform: uppercase; letter-spacing: .02em;
+}
+[data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover {
+    border-color: var(--accent) !important;
+}
+[data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover p {
+    color: var(--accent);
+}
+[data-testid="stPopover"] button [data-testid="stIconMaterial"] { display: none; }
+
+/* Widgets : la couleur d'accent suit --accent (le thème Streamlit, figé côté
+   serveur sur l'ambre, est écrasé partout où il est visible). */
+/* Pouce des sliders (le div qui porte stSliderThumbValue) */
+[data-testid="stSlider"] div:has(> [data-testid="stSliderThumbValue"]) {
+    background-color: var(--accent) !important;
+}
+/* Pills / segmented sélectionnés (markup stButtonGroup) : fond plein accent,
+   texte noir — l'intention des règles stPills ci-dessus, qui ne matchent pas
+   ce markup. */
+[data-testid="stButtonGroup"] button[aria-checked="true"] {
+    background: var(--accent) !important; border-color: var(--accent) !important;
+}
+[data-testid="stButtonGroup"] button[aria-checked="true"],
+[data-testid="stButtonGroup"] button[aria-checked="true"] p {
+    color: #000 !important; font-weight: 700;
+}
+/* Interrupteurs hors sidebar (ex. Disco) : piste active à l'accent */
+label[data-selected="true"]:has(input[role="switch"]):not([data-testid="stSidebar"] *)
+    > div:not([data-testid="stWidgetLabel"]) {
+    background: var(--accent) !important; border-color: var(--accent) !important;
+}

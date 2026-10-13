@@ -1,0 +1,22 @@
+# Core scientific stack
+# (pas de borne <2.0 : numpy 2.x est requis par Python >= 3.13 et validé par les tests)
+numpy>=1.26
+pandas>=2.2
+scipy>=1.11
+
+# Econometrics / stats
+statsmodels>=0.14
+
+# Data sources
+yfinance>=0.2.40         # front-month futures CL=F / BZ=F
+pandas-datareader>=0.10  # FRED spot (DCOILWTICO / DCOILBRENTEU)
+requests>=2.31           # EIA API + fallback FRED CSV
+
+# Storage / config
+pyarrow>=15.0            # cache parquet
+python-dotenv>=1.0       # lecture .env (clé EIA)
+
+# Viz / dashboard
+matplotlib>=3.8
+plotly>=5.20
+streamlit>=1.33

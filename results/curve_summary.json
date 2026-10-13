@@ -1,0 +1,32 @@
+{
+  "regime_share": {
+    "backwardation": 51.96,
+    "contango": 47.75,
+    "flat": 0.28
+  },
+  "n_days_unknown_regime": 445,
+  "roll_yield_ann_mean": 0.0035141693364697593,
+  "roll_yield_ann_mean_2004": -0.08550365399192342,
+  "corr_slope_spread": 0.1373711137506182,
+  "spread_by_regime": {
+    "backwardation": 4.277,
+    "contango": 6.18,
+    "flat": 5.062
+  },
+  "link_start": "2007-07-30",
+  "link_end": "2024-04-05",
+  "fwd_ret_by_regime": {
+    "backwardation": 0.218,
+    "contango": -0.064,
+    "flat": 4.348
+  },
+  "fwd_n_by_regime": {
+    "backwardation": 1641,
+    "contango": 2481,
+    "flat": 10
+  },
+  "fwd_diff_back_minus_contango_pct": -0.6719494058758593,
+  "fwd_t_stat_nonoverlap": -0.4012410259559539,
+  "curve_start": "1983-03-30",
+  "curve_end": "2024-04-05"
+}
