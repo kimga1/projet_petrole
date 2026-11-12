@@ -152,6 +152,127 @@ Selected statistical diagnostics for the full-sample static relationship:
 
 The online Kalman filter and rolling statistics use information available up to each observation. End-to-end tests verify that running the pipeline on a historical prefix produces the same overlapping returns as running it on the complete dataset.
 
+## Implementation overview
+
+```mermaid
+flowchart LR
+    A[Brent and WTI prices] --> B[Hedge-ratio estimation]
+    B --> C[Hedged spread]
+    C --> D[Rolling z-score]
+    D --> E[Entry and exit state machine]
+    E --> F[Execution lag and transaction costs]
+    F --> G[Volatility targeting]
+    G --> H[Metrics and dashboard]
+    I[WTI C1-C4 curve] --> J[Term-structure features]
+    J --> H
+```
+
+| Component | Main file | Responsibility |
+|---|---|---|
+| Hedge estimation | [`src/hedge_ratio.py`](src/hedge_ratio.py) | Static OLS, rolling OLS, and online Kalman filter |
+| Signal generation | [`src/signal.py`](src/signal.py) | Spread, z-score, entry guard, and position state machine |
+| Backtest engine | [`src/backtest.py`](src/backtest.py) | Execution lag, locked hedge ratios, P&L, costs, and trade records |
+| Risk scaling | [`src/sizing.py`](src/sizing.py) | Causal realised volatility and volatility-target overlay |
+| Statistical tests | [`src/stats_tests.py`](src/stats_tests.py) | ADF, Engle-Granger, half-life, and Hurst diagnostics |
+| Regime analysis | [`src/regime.py`](src/regime.py) | Rolling cointegration, half-life, and CUSUM diagnostics |
+| WTI curve | [`src/curve.py`](src/curve.py) | Curve slope, regimes, roll yield, and forward-return analysis |
+| Pipeline | [`src/pipeline.py`](src/pipeline.py) | End-to-end orchestration shared by scripts and dashboard |
+
+The excerpts below are shortened for readability. The linked modules contain the complete implementations and validation checks.
+
+<details>
+<summary><strong>Online Kalman hedge ratio</strong></summary>
+
+The state vector contains the time-varying intercept and hedge ratio. Each observation updates the estimate without using future prices.
+
+```python
+theta = np.zeros(2)                 # [alpha, beta]
+P = np.eye(2)
+
+for t in range(n):
+    H = np.array([1.0, xx[t]])
+    P_pred = P + Q
+
+    innovation = yy[t] - H @ theta
+    innovation_var = float(H @ P_pred @ H.T + R)
+    gain = (P_pred @ H) / innovation_var
+
+    theta = theta + gain * innovation
+    P = P_pred - np.outer(gain, H) @ P_pred
+    beta_arr[t] = theta[1]
+```
+
+Full implementation: [`kalman_hedge`](src/hedge_ratio.py)
+
+</details>
+
+<details>
+<summary><strong>Spread, rolling z-score, and entry guard</strong></summary>
+
+The trading spread uses the dynamic hedge ratio. The entry guard rejects non-positive prices and hedge ratios outside the configured economic range.
+
+```python
+spread = (y - beta * x).rename("resid")
+
+rolling_mean = spread.rolling(cfg.z_lookback).mean()
+rolling_std = spread.rolling(cfg.z_lookback).std(ddof=1)
+zscore = (spread - rolling_mean) / rolling_std
+
+can_enter = (y > 0) & (x > 0) & beta.notna()
+can_enter &= beta.between(cfg.beta_min, cfg.beta_max)
+positions = generate_signals(zscore, cfg, can_enter=can_enter)
+```
+
+Full implementation: [`build_signal`](src/signal.py)
+
+</details>
+
+<details>
+<summary><strong>Lagged execution, two-leg P&amp;L, and transaction costs</strong></summary>
+
+Signals and hedge ratios are shifted before use. Daily P&L is calculated from both legs, while costs are applied to absolute turnover.
+
+```python
+lag = max(1, cfg.execution_lag)
+held = np.concatenate([np.zeros(lag), target[:-lag]])
+beta_signal = np.concatenate([np.full(lag, np.nan), beta[:-lag]])
+
+pnl = (
+    brent_units * (brent[t] - brent[t - 1])
+    + wti_units * (wti[t] - wti[t - 1])
+)
+turnover = (
+    abs(brent_units - previous_brent_units) * abs(brent[t - 1])
+    + abs(wti_units - previous_wti_units) * abs(wti[t - 1])
+)
+net_pnl = pnl - cost_per_leg * turnover
+```
+
+Full implementation: [`_simulate`](src/backtest.py)
+
+</details>
+
+<details>
+<summary><strong>Causal volatility targeting</strong></summary>
+
+Risk is estimated from an always-invested hedged spread rather than strategy returns, which are zero while the strategy is flat. The additional shift ensures that the position multiplier uses volatility known before the holding period.
+
+```python
+lagged_beta = beta.shift(1)
+gross_notional = y.shift(1).abs() + lagged_beta.abs() * x.shift(1).abs()
+spread_return = (
+    y.diff() - lagged_beta * x.diff()
+) / gross_notional.where(gross_notional > 1e-8)
+
+realised_vol = spread_return.rolling(21).std(ddof=1) * np.sqrt(252)
+known_vol = realised_vol.shift(1)
+scalar = (target_vol / known_vol).clip(0.0, max_leverage).fillna(0.0)
+```
+
+Full implementation: [`spread_returns` and `vol_target_scalar`](src/sizing.py)
+
+</details>
+
 ## Data
 
 | Dataset | Source | Use |
