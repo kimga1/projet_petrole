@@ -8,6 +8,27 @@ Python research project on the relative-value relationship between Brent and WTI
 
 The interface is available in English and French. This is a research and educational project, not an investment recommendation or a production trading system.
 
+## Dashboard preview
+
+<p align="center">
+  <img src="docs/assets/dashboard-overview.png" alt="Dashboard overview showing strategy results, spread diagnostics, market regimes, and current positions" width="100%">
+</p>
+
+<p align="center"><sub>Overview: baseline configuration, performance summary, spread diagnostics, regime results, and current signal.</sub></p>
+
+<details>
+<summary><strong>Backtest and risk view</strong></summary>
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/dashboard-backtest.png" alt="Backtest dashboard showing cumulative P&amp;L, drawdown, rolling Sharpe ratio, and regime performance" width="100%">
+</p>
+
+<p align="center"><sub>Backtest: cumulative constant-notional P&amp;L, risk metrics, drawdown, rolling Sharpe ratio, and performance by regime.</sub></p>
+
+</details>
+
 ## Research objective
 
 Brent and WTI respond to common global oil-market factors but can diverge because of regional inventories, transport constraints, crude quality, export policy, and market structure. The project studies whether unusually large deviations in a hedged Brent-WTI spread subsequently mean-revert.
